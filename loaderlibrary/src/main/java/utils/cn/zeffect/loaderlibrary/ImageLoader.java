@@ -98,7 +98,7 @@ public class ImageLoader {
         mBacgroudHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                mExecutors.execute(mTaskQueue.removeLast().getRunnable());
+                mExecutors.execute(mTaskQueue.removeLast().getRunnable());//顺序加载：mTaskQueue.removeFirst()，倒序加载：mTaskQueue.removeLast()
                 try {
                     mSemaphore.acquire();
                 } catch (InterruptedException pE) {
