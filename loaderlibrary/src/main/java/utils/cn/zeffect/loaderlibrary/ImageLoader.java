@@ -158,7 +158,22 @@ public class ImageLoader {
             public void run() {
                 //执行加载图片的具体操作
                 Bitmap cacheBitmap = null;
-                cacheBitmap = ImageUtils.getBitmap(new File(getCacheDirs(), path));
+                //用MD5来进行存储文件到本地
+                String tempMd5 = ImageUtils.Md5PassWord(path);
+                File tempFile = new File(getCacheDirs(), tempMd5);
+                if (tempFile != null && tempFile.exists()) {
+                    cacheBitmap = ImageUtils.loadImageFromLocal(tempFile.getAbsolutePath(), pImageView);
+                } else {
+                    //网络下载
+                    boolean downloadState = DownloadImgUtils
+                            .downloadImgByUrl(path, tempFile);
+                    if (downloadState)// 如果下载成功
+                    {
+                        cacheBitmap = ImageUtils.loadImageFromLocal(tempFile.getAbsolutePath(), pImageView);
+                    } else {
+                        cacheBitmap = DownloadImgUtils.downloadImgByUrl(path, pImageView);
+                    }
+                }
                 addLruCache(path, cacheBitmap);
                 updaterImageView(path, pImageView, cacheBitmap);
                 mSemaphore.release();
@@ -170,8 +185,9 @@ public class ImageLoader {
      * 返回缓存目录
      * @return context==null返回SD卡根目录，否则返回qimon/student/cache/包名/
      */
+
     public static String getCacheDirs() {
-        File tempFile = new File(Environment.getExternalStorageDirectory().toString() + File.separator + "qimon" + File.separator + "student" + File.separator + "cache" + File.separator + "org.qimon.launcher6" + File.separator);
+        File tempFile = new File(Environment.getExternalStorageDirectory().toString() + File.separator + "Android" + File.separator + "data" + File.separator + "imageloader" + File.separator + "cache" + File.separator);
         if (!tempFile.exists()) {
             tempFile.mkdirs();
         }
